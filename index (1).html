@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pronostico</title>
+<meta name="description" content="Les pronos Premier Padel des gargouilles, par Man Vives Padel.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232452d6'/%3E%3Cpath d='M0 16h32M16 0v32' stroke='%23fff' stroke-width='2.5'/%3E%3Ccircle cx='22' cy='10' r='5' fill='%23f6cfae'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2452d6">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pronostico">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#fbf3ec; --surface:#ffffff; --ink:#0e1a3a; --muted:#5d6584; --line:#ecdccd;
+  --peach:#f6cfae; --blue:#2452d6; --blue-ink:#ffffff; --navy:#0e1a3a;
+  --hi:#f6cfae; --hi-ink:#0e1a3a; --strong:#2452d6;
+  --win:#1c8a4d; --win-bg:#e3f4ea; --lose:#bf3f2c; --lose-bg:#fbe9e5; --twitch:#7647f0;
+  --display:"Anton","Arial Narrow",Impact,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:12px; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0b1330; --surface:#141f45; --ink:#eef1fa; --muted:#9aa4c4; --line:#26325f;
+  --peach:#f2c4a0; --blue:#3a64e8; --hi:#f2c4a0; --strong:#f2c4a0;
+  --win:#43c682; --win-bg:#123726; --lose:#f07a62; --lose-bg:#3b1a16; --twitch:#a989ff; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.app{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:16px 64px;display:flex;flex-direction:column;gap:16px}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+[hidden]{display:none!important}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.hero{border-radius:var(--r);overflow:hidden;background:var(--peach);color:var(--navy)}
+.hero-top{padding:16px 18px 10px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,12vw,76px);line-height:.95;margin:0;text-transform:uppercase}
+.hero-band{background:var(--blue);color:var(--blue-ink);padding:14px 18px 16px;position:relative;display:flex;flex-direction:column;gap:10px}
+.hero-band::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:3px solid rgba(255,255,255,.85);pointer-events:none}
+.hero-band::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:3px solid rgba(255,255,255,.85);pointer-events:none}
+.hero-band>*{position:relative;z-index:1}
+.tsel{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tsel select{flex:1;min-width:0;border:0;border-radius:8px;padding:9px 11px;background:#fff;color:#0e1a3a;font-weight:600}
+.sub{margin:0;font-size:13px;font-weight:600}
+.me{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:rgba(14,26,58,.6);padding:10px;border-radius:10px}
+.me img{width:36px;height:36px;border-radius:50%;background:var(--peach)}
+.me .nm{flex:1;min-width:0;font-weight:700;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.myscore{font-family:var(--display);font-size:22px;background:var(--peach);color:var(--navy);padding:3px 10px;border-radius:8px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.btn-twitch{background:#9146ff;color:#fff;border:0;border-radius:8px;padding:10px 14px;font-weight:700;display:inline-flex;gap:8px;align-items:center}
+.btn-google{background:#fff;color:#1f1f1f;border:0;border-radius:8px;padding:10px 14px;font-weight:700;display:inline-flex;gap:8px;align-items:center}
+.logins{display:flex;gap:8px;flex-wrap:wrap}
+.hint{width:100%;font-size:12px;opacity:.85}
+.pseudo{width:100%;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pseudo label{width:100%;font-size:13px;font-weight:700}
+.pseudo input{flex:1;min-width:0;border:0;border-radius:8px;padding:9px 11px;background:#fff;color:#0e1a3a}
+.install{display:inline-flex;gap:6px;align-items:center;border:2px solid var(--navy);background:transparent;color:var(--navy);border-radius:999px;padding:6px 12px;font-weight:700;font-size:13px}
+.ios-tip{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+.ios-tip p{margin:0;flex:1}
+.linkbtn{background:none;border:0;color:inherit;text-decoration:underline;font-size:12px;opacity:.85;padding:0}
+
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;overflow-x:auto}
+.tabs button{flex:1;border:0;background:none;padding:8px 10px;border-radius:999px;font-weight:600;font-size:13px;white-space:nowrap;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--blue);color:var(--blue-ink)}
+
+.bdet{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.bdet summary{cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;list-style:none}
+.bdet summary::-webkit-details-marker{display:none}
+.bdet summary h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0;text-transform:uppercase}
+.bdet summary span{font-size:13px;font-weight:600;color:var(--muted)}
+.bdet[open] summary{margin-bottom:10px}
+.bgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:420px){.bgrid{grid-template-columns:1fr}}
+.bcard:last-child:nth-child(odd){grid-column:1/-1}
+.bcard{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.bcard .eff{font-family:var(--display);font-size:24px;line-height:1;color:var(--strong);text-transform:uppercase}
+.bcard .who{font-weight:700;font-size:13px}
+.bcard .txt{font-size:12px;color:var(--muted);flex:1}
+.bstate{align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:5px;background:var(--bg)}
+.bstate.on{background:var(--hi);color:var(--hi-ink)}
+.bstate.used{color:var(--muted)}
+.nrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.nrow select{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px}
+
+.rounds{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;display:flex;gap:6px;align-items:center}
+.chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--blue-ink)}
+.chip small{font-weight:500;opacity:.75;font-variant-numeric:tabular-nums}
+
+.list{display:flex;flex-direction:column;gap:10px}
+.match{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:8px}
+.mhead{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;gap:8px;flex-wrap:wrap}
+.side{display:grid;grid-template-columns:34px 1fr auto auto;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);background:none;border-radius:10px;padding:10px}
+.side:disabled{cursor:default}
+.side:not(:disabled):hover{border-color:var(--blue)}
+.side .seed{font-family:var(--display);font-size:16px;color:var(--muted);text-align:center}
+.side .names{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.side .prob{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.side .gain{font-family:var(--display);font-size:18px;font-variant-numeric:tabular-nums;min-width:44px;text-align:right;padding:0 6px;border-radius:6px}
+.side.sel{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.side.sel .gain{background:var(--hi);color:var(--hi-ink)}
+.side.won{background:var(--win-bg);border-color:var(--win)}
+.side.tbd .names{color:var(--muted);font-weight:500;font-style:italic}
+.score{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--muted)}
+.sets{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.sets button{border:1px solid var(--line);background:none;border-radius:8px;padding:4px 10px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
+.sets button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--blue-ink)}
+.sets button:disabled{opacity:.4;cursor:default}
+.sets .lbl{min-width:52px}
+.verdict{font-size:13px;font-weight:600;border-radius:8px;padding:6px 10px}
+.verdict.ok{background:var(--win-bg);color:var(--win)}
+.verdict.ko{background:var(--lose-bg);color:var(--lose)}
+.verdict.info{background:var(--bg);color:var(--muted)}
+.note{font-size:13px;color:var(--muted);margin:0}
+.empty{color:var(--muted);text-align:center;padding:28px 12px;border:1px dashed var(--line);border-radius:var(--r);display:flex;flex-direction:column;gap:10px;align-items:center}
+
+.board{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.bhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.bhead h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0;text-transform:uppercase}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:none;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--blue);color:var(--blue-ink)}
+.toggle{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600}
+.row{display:grid;grid-template-columns:34px 28px 1fr auto 56px;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.row:last-child{border-bottom:0}
+.row img{width:28px;height:28px;border-radius:50%;background:var(--peach)}
+.row.me-row{background:color-mix(in srgb,var(--peach) 30%,transparent)}
+.rank{font-family:var(--display);font-size:20px;text-align:center;color:var(--muted)}
+.row.podium .rank{color:var(--strong)}
+.who{min-width:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-weight:600;overflow-wrap:anywhere}
+.badge{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--twitch);color:var(--twitch);border-radius:4px;padding:1px 5px}
+.badge.red{border-color:var(--lose);color:var(--lose)}
+.me .badge{border-color:#fff;color:#fff}
+.acc{font-size:12px;color:var(--muted)}
+.pts{font-family:var(--display);font-size:20px;text-align:right}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px}
+.card h2{font-family:var(--display);font-weight:400;font-size:26px;margin:0;text-transform:uppercase}
+.card h3{font-size:13px;margin:6px 0 0;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.card p{margin:0;max-width:62ch}
+.formula{font-variant-numeric:tabular-nums;background:var(--bg);border-radius:8px;padding:10px 12px;font-weight:600}
+.rb{display:flex;flex-direction:column;gap:2px;border-left:3px solid var(--peach);padding-left:10px}
+.rb strong{font-size:14px}
+.rb span{font-size:14px;color:var(--muted)}
+
+.arow{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.arow .t{font-size:13px;font-weight:600;overflow-wrap:anywhere}
+.abtns{display:flex;gap:6px;flex-wrap:wrap}
+.abtns button,.btn{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 10px;font-size:13px;font-weight:600}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--blue-ink)}
+.btn.danger{color:var(--lose);border-color:var(--lose)}
+.btn:disabled,.abtns button:disabled{opacity:.45;cursor:default}
+.bar{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border-radius:5px;background:var(--bg);color:var(--muted)}
+.pill.on{background:var(--win-bg);color:var(--win)}
+
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);z-index:20;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.toast.err{background:var(--lose)}
+.foot{text-align:center;font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.side,.chip,.tabs button{transition:background .15s,border-color .15s,box-shadow .15s}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <div class="hero-top">
+      <div>
+        <span class="tag">Man Vives Padel</span>
+        <h1>Pronostico</h1>
+      </div>
+      <button class="install" data-act="install" id="installBtn" hidden>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 21h16"/></svg>Installer l'appli</button>
+    </div>
+    <div class="hero-band">
+      <div class="tsel" id="tsel"></div>
+      <div class="me" id="me"></div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-tab="pronos" aria-selected="true">Pronos</button>
+    <button role="tab" data-tab="classement" aria-selected="false">Classement</button>
+    <button role="tab" data-tab="regles" aria-selected="false">Règles</button>
+    <button role="tab" data-tab="admin" aria-selected="false" hidden id="adminTab">Admin</button>
+  </nav>
+
+  <div class="ios-tip" id="iosTip" hidden><p><strong>Installer Pronostico sur ton iPhone :</strong> touche le bouton Partager <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true" style="vertical-align:-2px"><path d="M12 15V3m0 0-4 4m4-4 4 4M5 11v9h14v-9"/></svg> en bas de Safari, puis « Sur l'écran d'accueil ».</p><button class="linkbtn" data-act="tipclose" style="color:var(--muted)">Fermer</button></div>
+  <main id="view"><div class="empty">Chargement…</div></main>
+  <p class="foot">Pronostico · jeu gratuit des gargouilles · données Padel API · <a href="confidentialite.html" style="color:inherit">Confidentialité</a></p>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// ======================= RÉGLAGES =======================
+const SUPABASE_URL = "https://dbmxgrtknesjlqujgaoo.supabase.co";
+const SUPABASE_KEY = "sb_publishable_WaU4-Ycm6M-Yc8-XH1FBXQ_ODoV9kkY";
+// ========================================================
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const BONUS=[
+  {k:"triple",who:"Dylan Guichard",eff:"×3",short:"Dydy ×3",txt:"Vous avez été touché par la chatte à Dydy : ce match compte triple."},
+  {k:"double",who:"Marc Phillipe",eff:"×2",short:"Philémon ×2",txt:"Philémon a décidé, par ses pouvoirs du divin chauve, de doubler les points du match."},
+  {k:"chance",who:"Ju Seuringue",eff:"Double chance",short:"Ju double chance",txt:"Si ton prono est perdu, Julien te fait quand même prendre les points de la cote la plus basse gagnante."},
+  {k:"neuille",who:"Olivier Guy",eff:"÷2",short:"Neuille",txt:"Tu as le pouvoir du neuille : divise par deux les points d'un autre joueur sur deux matchs du premier tour tirés au hasard."},
+  {k:"chat",who:"Black Cat",eff:"Chat noir",short:"Black Cat",txt:"Le Black Cat passe : un prono gagnant d'un autre joueur, tiré au hasard, ne lui rapporte plus rien."}
+];
+const MB=["triple","double","chance"];
+const B=k=>BONUS.find(b=>b.k===k);
+const RN={32:"32es",16:"16es",8:"8es",4:"Quarts",2:"Demies",1:"Finale"};
+const RL={32:"32e de finale",16:"16e de finale",8:"8e de finale",4:"Quart",2:"Demie",1:"Finale"};
+const CAT={men:"Hommes",women:"Femmes"};
+
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const S={session:null,me:null,settings:{categories:["men"]},tournaments:[],tid:null,cat:"men",round:null,
+  matches:[],preds:{},points:{},attacks:[],board:[],boardMode:"t",onlyF:false,tab:ls.get("pp-tab")||"pronos",
+  bOpen:ls.get("pp-bopen")?ls.get("pp-bopen")!=="0":window.innerWidth>700,adminList:null,busy:false};
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtPts=n=>n+(Math.abs(n)>1?" pts":" pt");
+function toast(msg,err){const t=document.getElementById("toast");t.textContent=msg;t.className="toast"+(err?" err":"");t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3500)}
+function errMsg(e){return (e&&(e.message||e.error_description))||"Erreur inconnue"}
+
+// ---------- cotes ----------
+const P=m=>[Math.max(m.pts1||0,50),Math.max(m.pts2||0,50)];
+function prob(m,w){const[a,b]=P(m);return (w===1?a:b)/(a+b)}
+function gain(m,w){return Math.round(10/prob(m,w))}
+const setBonus=g=>Math.round(g*0.25);
+const mult=k=>k==="triple"?3:k==="double"?2:1;
+
+const tour=()=>S.tournaments.find(t=>t.id===S.tid);
+function isOpen(m){const t=tour();return !!(t&&t.published&&m.status==="scheduled"&&m.team1&&m.team2&&(!m.scheduled_at||new Date(m.scheduled_at)>new Date()))}
+const catMatches=()=>S.matches.filter(m=>m.category===S.cat);
+const firstRound=()=>Math.max(0,...S.matches.map(m=>m.round));
+function when(m){
+  if(!m.scheduled_at)return m.schedule_label||"";
+  const d=new Date(m.scheduled_at);
+  return d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short",timeZone:"Europe/Paris"})+" · "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Paris"});
+}
+function scoreText(m){
+  const s=m.score;if(!s)return "";
+  if(Array.isArray(s))return s.map(x=>`${x.team_1??""}-${x.team_2??""}`).join("  ");
+  return String(s);
+}
+
+// ---------- chargement ----------
+async function loadMe(token){
+  if(!S.session){S.me=null;return}
+  const{data,error}=await sb.rpc("refresh_me",{p_token:token||null});
+  if(error){toast(errMsg(error),true);return}
+  S.me=data;
+}
+async function loadTournaments(){
+  const[{data:st},{data:ts,error}]=await Promise.all([
+    sb.from("settings").select("categories").maybeSingle(),
+    sb.from("tournaments").select("*").order("start_date",{ascending:false})
+  ]);
+  if(st)S.settings=st;
+  if(error){toast(errMsg(error),true);return}
+  S.tournaments=ts||[];
+  const vis=S.tournaments.filter(t=>t.published||S.me?.is_admin);
+  const saved=+ls.get("pp-tid");
+  if(!vis.find(t=>t.id===S.tid)){
+    const live=vis.find(t=>t.status==="live")||[...vis].filter(t=>t.status==="pending").sort((a,b)=>(a.start_date||"").localeCompare(b.start_date||""))[0];
+    S.tid=(vis.find(t=>t.id===saved)||live||vis[0]||{}).id||null;
+  }
+  if(!S.settings.categories.includes(S.cat))S.cat=S.settings.categories[0];
+}
+async function loadTournament(){
+  if(!S.tid){S.matches=[];S.preds={};S.points={};S.attacks=[];S.board=[];return}
+  const q=[
+    sb.from("matches").select("*").eq("tournament_id",S.tid).order("round",{ascending:false}).order("idx"),
+    sb.from("attacks").select("*").eq("tournament_id",S.tid),
+    sb.rpc("leaderboard",{p_tournament:S.boardMode==="t"?S.tid:null})
+  ];
+  if(S.session){
+    q.push(sb.from("predictions").select("*").eq("tournament_id",S.tid));
+    q.push(sb.rpc("my_points",{p_tournament:S.tid}));
+  }
+  const r=await Promise.all(q);
+  const e=r.find(x=>x.error);if(e)toast(errMsg(e.error),true);
+  S.matches=r[0].data||[];S.attacks=r[1].data||[];S.board=r[2].data||[];
+  S.preds={};(r[3]?.data||[]).forEach(p=>S.preds[p.match_id]=p);
+  S.points={};(r[4]?.data||[]).forEach(p=>S.points[p.match_id]=p);
+  const rounds=[...new Set(catMatches().map(m=>m.round))].sort((a,b)=>b-a);
+  if(!rounds.includes(S.round)){
+    S.round=rounds.find(rd=>catMatches().some(m=>m.round===rd&&(isOpen(m)||m.status==="live")))??rounds.find(rd=>catMatches().some(m=>m.round===rd&&!m.winner))??rounds[rounds.length-1]??null;
+  }
+}
+async function reloadBoard(){
+  const{data,error}=await sb.rpc("leaderboard",{p_tournament:S.boardMode==="t"?S.tid:null});
+  if(error)toast(errMsg(error),true);S.board=data||[];
+}
+
+// ---------- rendu ----------
+function renderHeader(){
+  const vis=S.tournaments.filter(t=>t.published||S.me?.is_admin);
+  const ts=document.getElementById("tsel");
+  if(!vis.length){ts.innerHTML=`<p class="sub">Aucun tournoi ouvert pour l'instant. Reviens bientôt !</p>`}
+  else{
+    const t=tour();
+    ts.innerHTML=`<label for="tournament" class="vh">Tournoi</label><select id="tournament">${vis.map(x=>`<option value="${x.id}" ${x.id===S.tid?"selected":""}>${esc(x.name)}${x.published?"":" (non publié)"}</option>`).join("")}</select>`
+      +(S.settings.categories.length>1?`<div class="seg" style="background:#fff;border:0">${S.settings.categories.map(c=>`<button data-cat="${c}" aria-pressed="${S.cat===c}" style="color:${S.cat===c?"#fff":"#0e1a3a"}">${CAT[c]||c}</button>`).join("")}</div>`:"")
+      +(t?`<p class="sub" style="width:100%">${esc(t.location||"")}${t.start_date?" · du "+new Date(t.start_date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+" au "+new Date(t.end_date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}):""}</p>`:"");
+  }
+  const me=document.getElementById("me");
+  if(!S.session){
+    const inApp=/Instagram|FBAN|FBAV|Snapchat|TikTok|musical_ly|Twitter|LinkedInApp|Line\//i.test(navigator.userAgent);
+    me.innerHTML=`<span class="nm">Connecte-toi pour jouer et entrer dans le classement des gargouilles.${inApp?`<br><small style="font-weight:600;opacity:.9">Tu es dans le navigateur d'une appli : si la connexion bloque, ouvre le site dans Safari ou Chrome (menu ⋯ → « Ouvrir dans le navigateur »).</small>`:""}</span><div class="logins"><button class="btn-twitch" data-act="login"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 2 2 6v14h5v3h3l3-3h4l5-5V2H4zm16 12-3 3h-5l-3 3v-3H5V4h15v10zM15 7h2v5h-2V7zm-5 0h2v5h-2V7z"/></svg>Se connecter avec Twitch</button><button class="btn-google" data-act="login-google"><svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.8 6C12.4 13.7 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l7.9-6z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.2-13.5-10l-7.9 6C6.6 42.6 14.6 48 24 48z"/></svg>Continuer avec Google</button></div><small class="hint">Twitch : badge Follower si tu suis la chaîne. Google : tu joues aussi, sans badge.</small>`;
+  }else{
+    const myT=Object.values(S.points).reduce((a,p)=>a+(p.pts||0),0);
+    const tw=!S.me||S.me.provider!=="google"&&S.me.provider!=="email"&&S.me.provider!=="apple";
+    me.innerHTML=`${S.me?.avatar_url?`<img src="${esc(S.me.avatar_url)}" alt="">`:""}<span class="nm">${esc(S.me?.display_name||"…")}${S.me?.is_follower?'<span class="badge">Follower</span>':""}${S.me?.is_admin?'<span class="badge">Admin</span>':""}<button class="linkbtn" data-act="logout">Déconnexion</button>${tw&&S.me&&!S.me.is_follower&&!S.me.is_admin?'<button class="linkbtn" data-act="login">Je viens de follow, revérifier</button>':""}${!tw&&S.me?.custom_name?'<button class="linkbtn" data-act="rename">Changer de pseudo</button>':""}</span><span class="myscore">${fmtPts(myT)}</span>`
+      +(S.me&&!tw&&(!S.me.custom_name||S.renaming)?`<form class="pseudo" id="pseudoForm"><label for="pseudo">${S.me.custom_name?"Ton nouveau pseudo":"Choisis ton pseudo pour le classement"}</label><input id="pseudo" maxlength="20" minlength="3" required autocomplete="nickname" value="${S.me.custom_name?esc(S.me.display_name):""}" placeholder="Ex. LeSmasheur"><button class="btn primary" type="submit">Valider</button></form>`:"");
+  }
+  document.getElementById("adminTab").hidden=!S.me?.is_admin;
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===S.tab));
+}
+
+function myBonusMatch(k){return Object.values(S.preds).find(p=>p.bonus===k)}
+function myAttack(kind){return S.attacks.find(a=>a.kind===kind&&a.attacker===S.session?.user.id)}
+function nameOf(uid){const r=S.board.find(x=>x.user_id===uid);return r?r.display_name:"un joueur"}
+function matchLabel(id){const m=S.matches.find(x=>x.id===id);return m?`${RL[m.round]||""} ${m.team1||"?"} – ${m.team2||"?"}`:"un match"}
+
+function viewBonus(){
+  if(!S.session)return "";
+  const others=S.board.filter(r=>r.user_id!==S.session.user.id);
+  const fr=firstRound(),neuilleOk=S.matches.some(m=>m.round===fr&&isOpen(m));
+  const chatTargets=others.filter(r=>r.good>0);
+  let left=0;
+  let cards=BONUS.map(b=>{
+    let st,ctl="";
+    if(MB.includes(b.k)){
+      const p=myBonusMatch(b.k);
+      if(!p){st=["","Disponible"];left++}
+      else{const m=S.matches.find(x=>x.id===p.match_id);const pt=S.points[p.match_id];
+        st=m&&isOpen(m)?["on","Placé · "+(RL[m.round]||"")]:pt?["used","Utilisé · +"+pt.pts+" pts"]:["used","Verrouillé · "+(RL[m?.round]||"")];}
+    }else{
+      const a=myAttack(b.k);
+      if(a){st=["used",(b.k==="neuille"?"Neuillé : ":"Chat lâché sur ")+nameOf(a.target)];
+        ctl=`<span class="note">${a.match_ids.map(matchLabel).map(esc).join("<br>")}</span>`}
+      else{
+        left++;st=["","Disponible"];
+        const list=b.k==="neuille"?(neuilleOk?others:[]):chatTargets;
+        ctl=`<div class="nrow"><label for="${b.k}T" class="vh">Joueur visé</label><select id="${b.k}T" ${list.length?"":"disabled"}>${list.map(x=>`<option value="${x.user_id}">${esc(x.display_name)}</option>`).join("")||"<option>Aucun joueur visable</option>"}</select><button class="btn primary" data-attack="${b.k}" ${list.length?"":"disabled"}>${b.k==="neuille"?"Neuiller":"Lâcher le chat"}</button></div>`
+          +(b.k==="neuille"&&!neuilleOk?`<span class="note">Seulement avant la fin du premier tour.</span>`:"")
+          +(b.k==="chat"&&!chatTargets.length?`<span class="note">Dispo dès qu'un joueur a un prono gagnant.</span>`:"");
+      }
+    }
+    return `<div class="bcard"><span class="eff">${b.eff}</span><span class="who">Bonus ${b.who}</span><span class="txt">${b.txt}</span><span class="bstate ${st[0]}">${st[1]}</span>${ctl}</div>`;
+  }).join("");
+  return `<details class="bdet" ${S.bOpen?"open":""} id="bdet"><summary><h2>Tes bonus</h2><span>${left}/5 disponibles</span></summary>
+  <p class="note" style="margin-bottom:10px">Une fois par tournoi, un seul bonus par match. Les ×3, ×2 et double chance se placent depuis un match où tu as fait ton prono.</p><div class="bgrid">${cards}</div></details>`;
+}
+
+function viewPronos(){
+  if(!S.tid)return `<div class="empty"><strong>Pas encore de tournoi ouvert</strong><span>Les pronos ouvrent dès que le tableau final du prochain tournoi est publié.</span></div>`;
+  const ms=catMatches();
+  if(!ms.length)return `<div class="empty"><strong>Le tableau n'est pas encore sorti</strong><span>Il apparaîtra ici automatiquement dès sa publication.</span></div>`;
+  const rounds=[...new Set(ms.map(m=>m.round))].sort((a,b)=>b-a);
+  let h=viewBonus()+'<div class="rounds">'+rounds.map(r=>{
+    const rm=ms.filter(m=>m.round===r&&m.team1&&m.team2);const done=rm.filter(m=>S.preds[m.id]).length;
+    return `<button class="chip" data-round="${r}" aria-pressed="${S.round===r}">${RN[r]||r} <small>${done}/${rm.length}</small></button>`}).join("")+'</div>';
+  if(!S.session)h+='<p class="note">Connecte-toi avec Twitch pour faire tes pronos.</p>';
+  const atkOnMe=S.attacks.filter(a=>a.target===S.session?.user.id);
+  h+='<div class="list">';
+  ms.filter(m=>m.round===S.round).forEach((m,k)=>{
+    const pick=S.preds[m.id],open=isOpen(m),bk=pick?.bonus||null,res=m.winner,pt=S.points[m.id];
+    const known=m.team1&&m.team2;
+    const status=res?(m.status==="retired"?"Abandon":"Terminé"):m.status==="live"?"En cours":["walkover","bye","not_played"].includes(m.status)?"Annulé":open?(pick?"Prono enregistré":"À pronostiquer"):known?"Verrouillé":"En attente";
+    let c=`<article class="match"><div class="mhead"><span>${RL[m.round]||""} · ${status}</span><span>${esc(when(m))}</span></div>`;
+    [1,2].forEach(w=>{
+      const name=w===1?m.team1:m.team2,seed=w===1?m.seed1:m.seed2;
+      if(!name){c+=`<button class="side tbd" disabled><span class="seed">–</span><span class="names">À déterminer</span><span class="prob"></span><span class="gain"></span></button>`;return}
+      const pr=known?Math.round(prob(m,w)*100)+"%":"",g=known?"+"+gain(m,w)*mult(bk):"";
+      const cls=["side",pick?.winner===w?"sel":"",res===w?"won":""].join(" ");
+      c+=`<button class="${cls}" data-pick="${m.id}|${w}" ${open?"":"disabled"} aria-pressed="${pick?.winner===w}"><span class="seed">${esc(seed||"")}</span><span class="names">${esc(name)}</span><span class="prob">${pr}</span><span class="gain">${g}</span></button>`;
+    });
+    if(scoreText(m))c+=`<span class="score">Score : ${esc(scoreText(m))}</span>`;
+    if(pick&&open){
+      const g=gain(m,pick.winner);
+      c+=`<div class="sets"><span class="lbl">Sets</span>`+["2-0","2-1"].map(s=>`<button data-sets="${m.id}|${s}" aria-pressed="${pick.sets===s}">${s}</button>`).join("")+`<span>+${setBonus(g)*mult(bk)} si exact</span></div>`;
+      c+=`<div class="sets"><span class="lbl">Bonus</span>`+MB.map(k=>{const other=myBonusMatch(k);const here=bk===k;const lockedElsewhere=other&&other.match_id!==m.id&&!isOpen(S.matches.find(x=>x.id===other.match_id)||{});
+        return `<button data-bonus="${m.id}|${k}" aria-pressed="${here}" ${lockedElsewhere?"disabled":""}>${B(k).short}</button>`}).join("")+`</div>`;
+    }
+    const hit=atkOnMe.filter(a=>a.match_ids.includes(m.id));
+    if(hit.length)c+=hit.map(a=>`<div class="verdict ko">${a.kind==="neuille"?"Neuillé par":"Black Cat de"} ${esc(nameOf(a.attacker))}${a.kind==="neuille"?" : points ÷2":" : prono annulé"}</div>`).join("");
+    if(pt){
+      if(pt.good)c+=`<div class="verdict ok">Bien vu : +${pt.pts} pts${pick?.sets&&pick.sets===m.sets?" · score exact":""}${bk&&bk!=="chance"?" · "+B(bk).short:""}${pt.halved?" · neuillé":""}${pt.cancelled?" · annulé par le Black Cat":""}</div>`;
+      else if(bk==="chance")c+=`<div class="verdict ok">Prono perdu, mais Ju te sauve : +${pt.pts} pts</div>`;
+      else c+=`<div class="verdict ko">Raté sur ce match${bk?" · bonus "+B(bk).short+" perdu":""}</div>`;
+    }else if(res&&S.session&&!pick)c+=`<div class="verdict info">Pas de prono sur ce match</div>`;
+    else if(["walkover","bye","not_played"].includes(m.status)&&pick)c+=`<div class="verdict info">Match non joué : prono sans effet</div>`;
+    h+=c+"</article>";
+  });
+  return h+"</div>";
+}
+
+function viewBoard(){
+  let rows=S.board;if(S.onlyF)rows=rows.filter(x=>x.is_follower||x.user_id===S.session?.user.id);
+  let h=`<section class="board"><div class="bhead"><h2>Classement des gargouilles</h2>
+    <div class="seg"><button data-board="t" aria-pressed="${S.boardMode==="t"}">Ce tournoi</button><button data-board="s" aria-pressed="${S.boardMode==="s"}">Saison</button></div>
+    <label class="toggle" for="onlyF"><input type="checkbox" id="onlyF" ${S.onlyF?"checked":""}> Followers Twitch uniquement</label></div>`;
+  const any=rows.some(x=>x.decided>0);
+  if(!rows.length)h+=`<div class="row"><span></span><span></span><span class="note">Personne n'a encore pronostiqué. Sois la première gargouille !</span><span></span><span></span></div>`;
+  rows.forEach((x,k)=>{h+=`<div class="row ${x.user_id===S.session?.user.id?"me-row":""} ${k<3&&any?"podium":""}"><span class="rank">${k+1}</span>${x.avatar_url?`<img src="${esc(x.avatar_url)}" alt="">`:"<span></span>"}<span class="who">${esc(x.display_name)}${x.is_follower?'<span class="badge">Follower</span>':""}${x.neuilled?'<span class="badge red">Neuillé</span>':""}${x.catted?'<span class="badge red">Black Cat</span>':""}</span><span class="acc">${x.good}/${x.decided}</span><span class="pts">${x.points}</span></div>`});
+  return h+"</section>";
+}
+
+function viewRules(){
+  return `<section class="card"><h2>Les règles de Pronostico</h2>
+  <p>Pronostique le vainqueur de chaque match du tableau final, puis le score en sets. Les pronos se ferment automatiquement au début de chaque match.</p>
+  <h3>Les cotes</h3><div class="formula">Chance de victoire = points FIP de la paire ÷ (points paire + points adversaires)</div>
+  <h3>Les points</h3><div class="formula">Bon vainqueur = 10 ÷ chance de victoire · Score en sets exact = +25 %</div>
+  <p>Exemple : un favori à 90 % rapporte 11 pts, l'exploit à 10 % rapporte 100 pts. Un match à 50/50 rapporte 20 pts. Les cotes suivent le classement FIP jusqu'au début du match, puis elles sont figées.</p>
+  <h3>Les bonus</h3><p>Chaque bonus s'utilise une fois par tournoi, et un seul par match. Tu peux déplacer un bonus tant que le match n'a pas commencé.</p>
+  ${BONUS.map(b=>`<div class="rb"><strong>Bonus ${b.who} · ${b.eff}</strong><span>${b.txt}</span></div>`).join("")}
+  <p class="note">Double chance : si ton prono perd, tu prends les points du favori du match, sans bonus de score exact. Neuille : à lancer avant la fin du premier tour, il touche deux matchs pas encore commencés. Black Cat : utilisable dès que le joueur visé a au moins un prono gagnant.</p>
+  <h3>Matchs non joués</h3><p>Forfait avant le match : le prono ne compte pas. Abandon en cours de match : le vainqueur compte, sans bonus de score exact.</p>
+  <h3>Classement et lots</h3><p>Un classement par tournoi et un classement sur la saison. Le haut du classement des gargouilles gagne des lots annoncés en live. La participation est gratuite.</p></section>`;
+}
+
+function viewAdmin(){
+  if(!S.me?.is_admin)return "";
+  const t=tour();
+  let h=`<section class="card"><h2>Admin</h2>
+    <h3>1 · Classement FIP</h3><p class="note">Mis à jour automatiquement chaque mardi. À lancer à la main la première fois.</p>
+    <div class="bar"><button class="btn" data-admin="rankings">Mettre à jour le classement FIP</button></div>
+    <h3>2 · Tournois Premier Padel</h3>
+    <div class="bar"><button class="btn primary" data-admin="list">Voir les prochains tournois</button></div>`;
+  if(S.adminList){
+    h+=S.adminList.length?S.adminList.map(x=>`<div class="arow"><span class="t">${esc(x.name)} · ${esc((x.level||"").toUpperCase())} · ${esc(x.start_date||"")} → ${esc(x.end_date||"")}</span><div class="abtns"><button data-import="${x.id}">${x.imported?"Resynchroniser":"Importer"}</button></div></div>`).join(""):`<p class="note">Aucun tournoi trouvé.</p>`;
+  }
+  h+=`<h3>3 · Tournois importés</h3>`;
+  h+=S.tournaments.length?S.tournaments.map(x=>`<div class="arow"><span class="t">${esc(x.name)} <span class="pill ${x.published?"on":""}">${x.published?"Publié":"Caché"}</span> <span class="pill">${esc(x.status||"")}</span></span><div class="abtns"><button data-pub="${x.id}|${x.published?0:1}">${x.published?"Cacher":"Publier"}</button><button data-import="${x.id}">Synchroniser</button><button data-del="${x.id}" class="danger">Supprimer</button></div></div>`).join(""):`<p class="note">Aucun tournoi importé.</p>`;
+  h+=`<p class="note">Les résultats se mettent à jour tout seuls toutes les 10 minutes pour les tournois publiés.</p></section>`;
+  if(t){
+    const ms=catMatches().filter(m=>m.team1&&m.team2);
+    h+=`<section class="card"><h2>Résultats · ${esc(t.name)}</h2><p class="note">Seulement si l'import se trompe. Un résultat saisi à la main n'est plus écrasé par la synchro, jusqu'à ce que tu cliques « Auto ».</p>`;
+    h+=ms.map(m=>`<div class="arow"><span class="t">${RL[m.round]||""} · ${esc(m.team1)} – ${esc(m.team2)} ${m.winner?`→ <strong>${esc(m.winner===1?m.team1:m.team2)} ${esc(m.sets||"")}</strong>`:""} ${m.manual?'<span class="pill on">Manuel</span>':""}</span><div class="abtns">${[[1,"2-0"],[1,"2-1"],[2,"2-0"],[2,"2-1"]].map(([w,s])=>`<button data-res="${m.id}|${w}|${s}">${esc((w===1?m.team1:m.team2).split(" / ")[0])} ${s}</button>`).join("")}<button data-auto="${m.id}">Auto</button></div></div>`).join("")||`<p class="note">Pas encore de matchs.</p>`;
+    h+="</section>";
+  }
+  return h;
+}
+
+function render(){
+  renderHeader();
+  const v=document.getElementById("view");
+  if(S.tab==="admin"&&!S.me?.is_admin)S.tab="pronos";
+  v.innerHTML=S.tab==="pronos"?viewPronos():S.tab==="classement"?viewBoard():S.tab==="regles"?viewRules():viewAdmin();
+}
+
+// ---------- actions ----------
+async function savePred(mid,patch){
+  const cur=S.preds[mid];
+  const row={user_id:S.session.user.id,match_id:mid,winner:cur?.winner,sets:cur?.sets??null,bonus:cur?.bonus??null,...patch};
+  const{data,error}=await sb.from("predictions").upsert(row,{onConflict:"user_id,match_id"}).select().single();
+  if(error)throw error;
+  S.preds[mid]=data;
+}
+async function act(fn,okMsg){
+  if(S.busy)return;S.busy=true;
+  try{await fn();if(okMsg)toast(okMsg)}catch(e){toast(errMsg(e),true)}finally{S.busy=false;render()}
+}
+async function login(provider="twitch"){
+  const redirectTo=location.origin+location.pathname;
+  const options=provider==="twitch"?{redirectTo,scopes:"user:read:follows"}:{redirectTo};
+  const{error}=await sb.auth.signInWithOAuth({provider,options});
+  if(error)toast(errMsg(error),true);
+}
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t)return;
+  const d=t.dataset;
+  if(d.tab){S.tab=d.tab;ls.set("pp-tab",S.tab);render();return}
+  if(d.act==="login"){login("twitch");return}
+  if(d.act==="login-google"){login("google");return}
+  if(d.act==="rename"){S.renaming=true;render();setTimeout(()=>document.getElementById("pseudo")?.focus(),0);return}
+  if(d.act==="install"){installApp();return}
+  if(d.act==="logout"){act(async()=>{await sb.auth.signOut();S.session=null;S.me=null;await loadTournaments();await loadTournament()});return}
+  if(d.cat){S.cat=d.cat;S.round=null;act(loadTournament);return}
+  if(d.round){S.round=+d.round;render();return}
+  if(d.board){S.boardMode=d.board;act(reloadBoard);return}
+  if(d.pick&&!S.session){toast("Connecte-toi (Twitch ou Google, en haut) pour faire tes pronos",true);document.getElementById("me").scrollIntoView({behavior:"smooth",block:"center"});return}
+  if(d.pick){const[mid,w]=d.pick.split("|").map(Number);const cur=S.preds[mid];
+    act(()=>savePred(mid,{winner:w,sets:cur&&cur.winner===w?cur.sets:null}));return}
+  if(d.sets){const[mid,s]=d.sets.split("|");act(()=>savePred(+mid,{sets:s}));return}
+  if(d.bonus){const[mid,k]=d.bonus.split("|");const m=+mid;
+    act(async()=>{
+      if(S.preds[m].bonus===k){await savePred(m,{bonus:null});return}
+      const other=myBonusMatch(k);
+      if(other&&other.match_id!==m)await savePred(other.match_id,{bonus:null});
+      await savePred(m,{bonus:k});
+    });return}
+  if(d.attack){const sel=document.getElementById(d.attack+"T");if(!sel||!sel.value)return;
+    act(async()=>{
+      const{error}=await sb.rpc(d.attack==="neuille"?"use_neuille":"use_black_cat",{p_tournament:S.tid,p_target:sel.value});
+      if(error)throw error;await loadTournament();
+    },d.attack==="neuille"?"Neuille lancé !":"Le Black Cat est passé…");return}
+  // admin
+  if(d.admin==="rankings"){act(async()=>{const{data,error}=await sb.rpc("admin_sync_rankings");if(error)throw error;toast(data+" joueurs mis à jour")});return}
+  if(d.admin==="list"){act(async()=>{const{data,error}=await sb.rpc("admin_list_tournaments");if(error)throw error;S.adminList=data});return}
+  if(d.import){act(async()=>{const{data,error}=await sb.rpc("admin_sync",{p_tournament:+d.import});if(error)throw error;
+    await loadTournaments();if(!S.tid)S.tid=+d.import;await loadTournament();if(S.adminList)S.adminList.forEach(x=>{if(x.id==d.import)x.imported=true});toast(data+" matchs importés")});return}
+  if(d.pub){const[id,p]=d.pub.split("|");act(async()=>{const{error}=await sb.rpc("admin_publish",{p_tournament:+id,p_published:p==="1"});if(error)throw error;await loadTournaments();await loadTournament()},p==="1"?"Tournoi publié":"Tournoi caché");return}
+  if(d.del){if(t.dataset.confirm!=="1"){t.dataset.confirm="1";t.textContent="Confirmer la suppression";return}
+    act(async()=>{const{error}=await sb.rpc("admin_delete_tournament",{p_tournament:+d.del});if(error)throw error;S.tid=null;await loadTournaments();await loadTournament()},"Tournoi supprimé");return}
+  if(d.res){const[mid,w,s]=d.res.split("|");act(async()=>{const{error}=await sb.rpc("admin_set_result",{p_match:+mid,p_winner:+w,p_sets:s});if(error)throw error;await loadTournament()},"Résultat enregistré");return}
+  if(d.auto){act(async()=>{const{error}=await sb.rpc("admin_reset_result",{p_match:+d.auto});if(error)throw error;await loadTournament()},"Résultat remis en automatique");return}
+});
+document.addEventListener("submit",e=>{
+  if(e.target.id!=="pseudoForm")return;
+  e.preventDefault();
+  const v=document.getElementById("pseudo").value;
+  act(async()=>{const{data,error}=await sb.rpc("set_pseudo",{p_name:v});if(error)throw error;S.me=data;S.renaming=false;await reloadBoard()},"Pseudo enregistré");
+});
+document.addEventListener("change",e=>{
+  if(e.target.id==="tournament"){S.tid=+e.target.value;ls.set("pp-tid",S.tid);S.round=null;act(loadTournament)}
+  if(e.target.id==="onlyF"){S.onlyF=e.target.checked;render()}
+});
+document.addEventListener("toggle",e=>{if(e.target.id==="bdet"){S.bOpen=e.target.open;ls.set("pp-bopen",S.bOpen?"1":"0")}},true);
+
+// ---------- appli installable ----------
+let deferredPrompt=null;
+const standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!/CriOS|FxiOS|EdgiOS/i.test(navigator.userAgent);
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;if(!standalone)document.getElementById("installBtn").hidden=false});
+window.addEventListener("appinstalled",()=>{document.getElementById("installBtn").hidden=true;toast("Pronostico est installé sur ton écran d'accueil")});
+if(isIOS&&!standalone)document.getElementById("installBtn").hidden=false;
+async function installApp(){
+  if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;document.getElementById("installBtn").hidden=true;return}
+  if(isIOS){document.getElementById("iosTip").hidden=false;document.getElementById("iosTip").scrollIntoView({behavior:"smooth",block:"center"});return}
+  toast("Ouvre le menu de ton navigateur puis « Installer l'application » ou « Ajouter à l'écran d'accueil »");
+}
+document.addEventListener("click",e=>{if(e.target.closest('[data-act="tipclose"]'))document.getElementById("iosTip").hidden=true});
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+
+// ---------- démarrage ----------
+let started=false;
+sb.auth.onAuthStateChange((event,session)=>{
+  const was=S.session?.user.id;S.session=session;
+  if(!started)return;
+  if(session?.provider_token&&event==="SIGNED_IN"){
+    setTimeout(()=>act(async()=>{await loadMe(session.provider_token);await loadTournaments();await loadTournament()},S.me?.is_follower?"Connecté · follower vérifié":"Connecté"),0);
+  }else if((session?.user.id)!==was){
+    setTimeout(()=>act(async()=>{await loadMe();await loadTournaments();await loadTournament()}),0);
+  }
+});
+(async()=>{
+  const{data}=await sb.auth.getSession();S.session=data.session;
+  try{
+    await loadMe(S.session?.provider_token);
+    await loadTournaments();await loadTournament();
+  }catch(e){toast(errMsg(e),true)}
+  started=true;render();
+  if(location.hash.includes("access_token"))history.replaceState(null,"",location.pathname);
+  setInterval(()=>{if(document.visibilityState==="visible"&&!S.busy&&S.tab!=="admin")loadTournament().then(render).catch(()=>{})},60000);
+})();
+</script>
+</body>
+</html>
