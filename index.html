@@ -297,6 +297,7 @@ async function loadTournament(){
   const r=await Promise.all(q);
   const e=r.find(x=>x.error);if(e)toast(errMsg(e.error),true);
   S.matches=r[0].data||[];S.attacks=r[1].data||[];S.board=r[2].data||[];
+  await loadAllBoard();
   S.preds={};(r[3]?.data||[]).forEach(p=>S.preds[p.match_id]=p);
   S.points={};(r[4]?.data||[]).forEach(p=>S.points[p.match_id]=p);
   const rounds=[...new Set(catMatches().map(m=>m.round))].sort((a,b)=>b-a);
@@ -307,6 +308,12 @@ async function loadTournament(){
 async function reloadBoard(){
   const{data,error}=await sb.rpc("leaderboard",{p_tournament:S.boardMode==="t"?S.tid:null,p_category:S.cat});
   if(error)toast(errMsg(error),true);S.board=data||[];
+  await loadAllBoard();
+}
+async function loadAllBoard(){
+  if(!S.boardAll){S.allRows=null;return}
+  const{data,error}=await sb.rpc("leaderboard",{p_tournament:S.boardMode==="t"?S.tid:null,p_category:"all"});
+  if(error)toast(errMsg(error),true);S.allRows=data||[];
 }
 
 // ---------- rendu ----------
@@ -416,8 +423,10 @@ function viewPronos(){
 }
 
 function viewBoard(){
-  let rows=S.board;if(S.onlyF)rows=rows.filter(x=>x.is_follower||x.user_id===S.session?.user.id);
-  let h=`<section class="board"><div class="bhead"><h2>Classement des gargouilles · ${S.cat==="women"?"Femmes":"Hommes"}</h2>
+  let rows=(S.boardAll?S.allRows:S.board)||[];if(S.onlyF)rows=rows.filter(x=>x.is_follower||x.user_id===S.session?.user.id);
+  const two=S.settings.categories.length>1;
+  let h=`<section class="board"><div class="bhead"><h2>Classement des gargouilles${two?" · "+(S.boardAll?"Général":S.cat==="women"?"Femmes":"Hommes"):""}</h2>
+    ${two?`<div class="seg"><button data-bcat="men" aria-pressed="${!S.boardAll&&S.cat==="men"}">Hommes</button><button data-bcat="women" aria-pressed="${!S.boardAll&&S.cat==="women"}">Femmes</button><button data-bcat="all" aria-pressed="${!!S.boardAll}">Hommes + Femmes</button></div>`:""}
     <div class="seg"><button data-board="t" aria-pressed="${S.boardMode==="t"}">Ce tournoi</button><button data-board="s" aria-pressed="${S.boardMode==="s"}">Saison</button></div>
     <label class="toggle" for="onlyF"><input type="checkbox" id="onlyF" ${S.onlyF?"checked":""}> Followers Twitch uniquement</label></div>`;
   const any=rows.some(x=>x.decided>0);
@@ -497,9 +506,14 @@ document.addEventListener("click",e=>{
   if(d.act==="rename"){S.renaming=true;render();setTimeout(()=>document.getElementById("pseudo")?.focus(),0);return}
   if(d.act==="install"){installApp();return}
   if(d.act==="logout"){act(async()=>{await sb.auth.signOut();S.session=null;S.me=null;await loadTournaments();await loadTournament()});return}
-  if(d.cat){if(d.cat===S.cat)return;S.cat=d.cat;S.round=null;ls.set("pp-cat",S.cat);history.replaceState(null,"",location.pathname+(S.cat==="women"?"#femmes":"#hommes"));render();act(loadTournament);return}
+  if(d.cat){if(d.cat===S.cat)return;S.cat=d.cat;S.boardAll=false;S.round=null;ls.set("pp-cat",S.cat);history.replaceState(null,"",location.pathname+(S.cat==="women"?"#femmes":"#hommes"));render();act(loadTournament);return}
   if(d.round){S.round=+d.round;render();return}
   if(d.board){S.boardMode=d.board;act(reloadBoard);return}
+  if(d.bcat){
+    if(d.bcat==="all"){S.boardAll=true;act(loadAllBoard);return}
+    S.boardAll=false;
+    if(d.bcat!==S.cat){S.cat=d.bcat;S.round=null;ls.set("pp-cat",S.cat);history.replaceState(null,"",location.pathname+(S.cat==="women"?"#femmes":"#hommes"));act(loadTournament)}else render();
+    return}
   if(d.pick&&!S.session){toast("Connecte-toi (Twitch ou Google, en haut) pour faire tes pronos",true);document.getElementById("me").scrollIntoView({behavior:"smooth",block:"center"});return}
   if(d.pick){const[mid,w]=d.pick.split("|").map(Number);const cur=S.preds[mid];
     act(()=>savePred(mid,{winner:w,sets:cur&&cur.winner===w?cur.sets:null}));return}
