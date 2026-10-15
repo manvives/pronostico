@@ -67,6 +67,12 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,12vw,76px);li
 .ios-tip p{margin:0;flex:1}
 .linkbtn{background:none;border:0;color:inherit;text-decoration:underline;font-size:12px;opacity:.85;padding:0}
 
+.boards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.boards button{border:2px solid var(--line);background:var(--surface);border-radius:var(--r);padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:2px;color:var(--ink);min-width:0}
+.boards .bt{font-family:var(--display);font-size:24px;line-height:1;text-transform:uppercase}
+.boards .bs{font-size:12px;color:var(--muted);font-weight:600}
+.boards button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue);color:var(--blue-ink)}
+.boards button[aria-pressed="true"] .bs{color:var(--blue-ink);opacity:.85}
 .tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;overflow-x:auto}
 .tabs button{flex:1;border:0;background:none;padding:8px 10px;border-radius:999px;font-weight:600;font-size:13px;white-space:nowrap;color:var(--muted)}
 .tabs button[aria-selected="true"]{background:var(--blue);color:var(--blue-ink)}
@@ -185,6 +191,8 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,12vw,76px);li
     </div>
   </header>
 
+  <div class="boards" id="boards" role="group" aria-label="Tableau"></div>
+
   <nav class="tabs" role="tablist" id="tabs">
     <button role="tab" data-tab="pronos" aria-selected="true">Pronos</button>
     <button role="tab" data-tab="classement" aria-selected="false">Classement</button>
@@ -221,7 +229,7 @@ const RL={32:"32e de finale",16:"16e de finale",8:"8e de finale",4:"Quart",2:"De
 const CAT={men:"Hommes",women:"Femmes"};
 
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-const S={session:null,me:null,settings:{categories:["men"]},tournaments:[],tid:null,cat:"men",round:null,
+const S={session:null,me:null,settings:{categories:["men"]},tournaments:[],tid:null,cat:/femmes|women/i.test(location.hash)?"women":/hommes|men/i.test(location.hash)?"men":(ls.get("pp-cat")==="women"?"women":"men"),round:null,
   matches:[],preds:{},points:{},attacks:[],board:[],boardMode:"t",onlyF:false,tab:ls.get("pp-tab")||"pronos",
   bOpen:ls.get("pp-bopen")?ls.get("pp-bopen")!=="0":window.innerWidth>700,adminList:null,busy:false};
 
@@ -240,7 +248,7 @@ const mult=k=>k==="triple"?3:k==="double"?2:1;
 const tour=()=>S.tournaments.find(t=>t.id===S.tid);
 function isOpen(m){const t=tour();return !!(t&&t.published&&m.status==="scheduled"&&m.team1&&m.team2&&(!m.scheduled_at||new Date(m.scheduled_at)>new Date()))}
 const catMatches=()=>S.matches.filter(m=>m.category===S.cat);
-const firstRound=()=>Math.max(0,...S.matches.map(m=>m.round));
+const firstRound=()=>Math.max(0,...catMatches().map(m=>m.round));
 function when(m){
   if(!m.scheduled_at)return m.schedule_label||"";
   const d=new Date(m.scheduled_at);
@@ -280,7 +288,7 @@ async function loadTournament(){
   const q=[
     sb.from("matches").select("*").eq("tournament_id",S.tid).order("round",{ascending:false}).order("idx"),
     sb.from("attacks").select("*").eq("tournament_id",S.tid),
-    sb.rpc("leaderboard",{p_tournament:S.boardMode==="t"?S.tid:null})
+    sb.rpc("leaderboard",{p_tournament:S.boardMode==="t"?S.tid:null,p_category:S.cat})
   ];
   if(S.session){
     q.push(sb.from("predictions").select("*").eq("tournament_id",S.tid));
@@ -289,6 +297,7 @@ async function loadTournament(){
   const r=await Promise.all(q);
   const e=r.find(x=>x.error);if(e)toast(errMsg(e.error),true);
   S.matches=r[0].data||[];S.attacks=r[1].data||[];S.board=r[2].data||[];
+  await loadAllBoard();
   S.preds={};(r[3]?.data||[]).forEach(p=>S.preds[p.match_id]=p);
   S.points={};(r[4]?.data||[]).forEach(p=>S.points[p.match_id]=p);
   const rounds=[...new Set(catMatches().map(m=>m.round))].sort((a,b)=>b-a);
@@ -297,8 +306,14 @@ async function loadTournament(){
   }
 }
 async function reloadBoard(){
-  const{data,error}=await sb.rpc("leaderboard",{p_tournament:S.boardMode==="t"?S.tid:null});
+  const{data,error}=await sb.rpc("leaderboard",{p_tournament:S.boardMode==="t"?S.tid:null,p_category:S.cat});
   if(error)toast(errMsg(error),true);S.board=data||[];
+  await loadAllBoard();
+}
+async function loadAllBoard(){
+  if(!S.boardAll){S.allRows=null;return}
+  const{data,error}=await sb.rpc("leaderboard",{p_tournament:S.boardMode==="t"?S.tid:null,p_category:"all"});
+  if(error)toast(errMsg(error),true);S.allRows=data||[];
 }
 
 // ---------- rendu ----------
@@ -309,7 +324,6 @@ function renderHeader(){
   else{
     const t=tour();
     ts.innerHTML=`<label for="tournament" class="vh">Tournoi</label><select id="tournament">${vis.map(x=>`<option value="${x.id}" ${x.id===S.tid?"selected":""}>${esc(x.name)}${x.published?"":" (non publié)"}</option>`).join("")}</select>`
-      +(S.settings.categories.length>1?`<div class="seg" style="background:#fff;border:0">${S.settings.categories.map(c=>`<button data-cat="${c}" aria-pressed="${S.cat===c}" style="color:${S.cat===c?"#fff":"#0e1a3a"}">${CAT[c]||c}</button>`).join("")}</div>`:"")
       +(t?`<p class="sub" style="width:100%">${esc(t.location||"")}${t.start_date?" · du "+new Date(t.start_date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+" au "+new Date(t.end_date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}):""}</p>`:"");
   }
   const me=document.getElementById("me");
@@ -317,24 +331,27 @@ function renderHeader(){
     const inApp=/Instagram|FBAN|FBAV|Snapchat|TikTok|musical_ly|Twitter|LinkedInApp|Line\//i.test(navigator.userAgent);
     me.innerHTML=`<span class="nm">Connecte-toi pour jouer et entrer dans le classement des gargouilles.${inApp?`<br><small style="font-weight:600;opacity:.9">Tu es dans le navigateur d'une appli : si la connexion bloque, ouvre le site dans Safari ou Chrome (menu ⋯ → « Ouvrir dans le navigateur »).</small>`:""}</span><div class="logins"><button class="btn-twitch" data-act="login"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 2 2 6v14h5v3h3l3-3h4l5-5V2H4zm16 12-3 3h-5l-3 3v-3H5V4h15v10zM15 7h2v5h-2V7zm-5 0h2v5h-2V7z"/></svg>Se connecter avec Twitch</button><button class="btn-google" data-act="login-google"><svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.8 6C12.4 13.7 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l7.9-6z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.2-13.5-10l-7.9 6C6.6 42.6 14.6 48 24 48z"/></svg>Continuer avec Google</button></div><small class="hint">Twitch : badge Follower si tu suis la chaîne. Google : tu joues aussi, sans badge.</small>`;
   }else{
-    const myT=Object.values(S.points).reduce((a,p)=>a+(p.pts||0),0);
+    const myT=Object.values(S.points).filter(p=>S.matches.find(m=>m.id===p.match_id)?.category===S.cat).reduce((a,p)=>a+(p.pts||0),0);
     const tw=!S.me||S.me.provider!=="google"&&S.me.provider!=="email"&&S.me.provider!=="apple";
     me.innerHTML=`${S.me?.avatar_url?`<img src="${esc(S.me.avatar_url)}" alt="">`:""}<span class="nm">${esc(S.me?.display_name||"…")}${S.me?.is_follower?'<span class="badge">Follower</span>':""}${S.me?.is_admin?'<span class="badge">Admin</span>':""}<button class="linkbtn" data-act="logout">Déconnexion</button>${tw&&S.me&&!S.me.is_follower&&!S.me.is_admin?'<button class="linkbtn" data-act="login">Je viens de follow, revérifier</button>':""}${!tw&&S.me?.custom_name?'<button class="linkbtn" data-act="rename">Changer de pseudo</button>':""}</span><span class="myscore">${fmtPts(myT)}</span>`
       +(S.me&&!tw&&(!S.me.custom_name||S.renaming)?`<form class="pseudo" id="pseudoForm"><label for="pseudo">${S.me.custom_name?"Ton nouveau pseudo":"Choisis ton pseudo pour le classement"}</label><input id="pseudo" maxlength="20" minlength="3" required autocomplete="nickname" value="${S.me.custom_name?esc(S.me.display_name):""}" placeholder="Ex. LeSmasheur"><button class="btn primary" type="submit">Valider</button></form>`:"");
   }
   document.getElementById("adminTab").hidden=!S.me?.is_admin;
+  const bd=document.getElementById("boards");
+  bd.hidden=S.settings.categories.length<2;
+  bd.innerHTML=S.settings.categories.map(c=>`<button data-cat="${c}" aria-pressed="${S.cat===c}"><span class="bt">${c==="women"?"Femmes":"Hommes"}</span><span class="bs">${c==="women"?"Tableau féminin":"Tableau masculin"} · classement à part</span></button>`).join("");
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===S.tab));
 }
 
-function myBonusMatch(k){return Object.values(S.preds).find(p=>p.bonus===k)}
-function myAttack(kind){return S.attacks.find(a=>a.kind===kind&&a.attacker===S.session?.user.id)}
+function myBonusMatch(k){return Object.values(S.preds).find(p=>p.bonus===k&&(p.category||"men")===S.cat)}
+function myAttack(kind){return S.attacks.find(a=>a.kind===kind&&a.attacker===S.session?.user.id&&(a.category||"men")===S.cat)}
 function nameOf(uid){const r=S.board.find(x=>x.user_id===uid);return r?r.display_name:"un joueur"}
 function matchLabel(id){const m=S.matches.find(x=>x.id===id);return m?`${RL[m.round]||""} ${m.team1||"?"} – ${m.team2||"?"}`:"un match"}
 
 function viewBonus(){
   if(!S.session)return "";
   const others=S.board.filter(r=>r.user_id!==S.session.user.id);
-  const fr=firstRound(),neuilleOk=S.matches.some(m=>m.round===fr&&isOpen(m));
+  const fr=firstRound(),neuilleOk=catMatches().some(m=>m.round===fr&&isOpen(m));
   const chatTargets=others.filter(r=>r.good>0);
   let left=0;
   let cards=BONUS.map(b=>{
@@ -365,7 +382,7 @@ function viewBonus(){
 function viewPronos(){
   if(!S.tid)return `<div class="empty"><strong>Pas encore de tournoi ouvert</strong><span>Les pronos ouvrent dès que le tableau final du prochain tournoi est publié.</span></div>`;
   const ms=catMatches();
-  if(!ms.length)return `<div class="empty"><strong>Le tableau n'est pas encore sorti</strong><span>Il apparaîtra ici automatiquement dès sa publication.</span></div>`;
+  if(!ms.length)return `<div class="empty"><strong>${S.cat==="women"?"Le tableau féminin n'est pas encore sorti":"Le tableau n'est pas encore sorti"}</strong><span>Il apparaîtra ici automatiquement dès sa publication. Certains tournois n'ont pas de tableau ${S.cat==="women"?"féminin":"masculin"}.</span></div>`;
   const rounds=[...new Set(ms.map(m=>m.round))].sort((a,b)=>b-a);
   let h=viewBonus()+'<div class="rounds">'+rounds.map(r=>{
     const rm=ms.filter(m=>m.round===r&&m.team1&&m.team2);const done=rm.filter(m=>S.preds[m.id]).length;
@@ -406,8 +423,10 @@ function viewPronos(){
 }
 
 function viewBoard(){
-  let rows=S.board;if(S.onlyF)rows=rows.filter(x=>x.is_follower||x.user_id===S.session?.user.id);
-  let h=`<section class="board"><div class="bhead"><h2>Classement des gargouilles</h2>
+  let rows=(S.boardAll?S.allRows:S.board)||[];if(S.onlyF)rows=rows.filter(x=>x.is_follower||x.user_id===S.session?.user.id);
+  const two=S.settings.categories.length>1;
+  let h=`<section class="board"><div class="bhead"><h2>Classement des gargouilles${two?" · "+(S.boardAll?"Général":S.cat==="women"?"Femmes":"Hommes"):""}</h2>
+    ${two?`<div class="seg"><button data-bcat="men" aria-pressed="${!S.boardAll&&S.cat==="men"}">Hommes</button><button data-bcat="women" aria-pressed="${!S.boardAll&&S.cat==="women"}">Femmes</button><button data-bcat="all" aria-pressed="${!!S.boardAll}">Hommes + Femmes</button></div>`:""}
     <div class="seg"><button data-board="t" aria-pressed="${S.boardMode==="t"}">Ce tournoi</button><button data-board="s" aria-pressed="${S.boardMode==="s"}">Saison</button></div>
     <label class="toggle" for="onlyF"><input type="checkbox" id="onlyF" ${S.onlyF?"checked":""}> Followers Twitch uniquement</label></div>`;
   const any=rows.some(x=>x.decided>0);
@@ -418,7 +437,7 @@ function viewBoard(){
 
 function viewRules(){
   return `<section class="card"><h2>Les règles de Pronostico</h2>
-  <p>Pronostique le vainqueur de chaque match du tableau final, puis le score en sets. Les pronos se ferment automatiquement au début de chaque match.</p>
+  <p>Pronostique le vainqueur de chaque match du tableau final, puis le score en sets. Les pronos se ferment automatiquement au début de chaque match.</p><p>Le tableau Hommes et le tableau Femmes sont deux jeux séparés : chacun a ses pronos, ses 5 bonus et son propre classement.</p>
   <h3>Les cotes</h3><div class="formula">Chance de victoire = points FIP de la paire ÷ (points paire + points adversaires)</div>
   <h3>Les points</h3><div class="formula">Bon vainqueur = 10 ÷ chance de victoire · Score en sets exact = +25 %</div>
   <p>Exemple : un favori à 90 % rapporte 11 pts, l'exploit à 10 % rapporte 100 pts. Un match à 50/50 rapporte 20 pts. Les cotes suivent le classement FIP jusqu'au début du match, puis elles sont figées.</p>
@@ -434,7 +453,7 @@ function viewAdmin(){
   const t=tour();
   let h=`<section class="card"><h2>Admin</h2>
     <h3>1 · Classement FIP</h3><p class="note">Mis à jour automatiquement chaque mardi. À lancer à la main la première fois.</p>
-    <div class="bar"><button class="btn" data-admin="rankings">Mettre à jour le classement FIP</button></div>
+    <div class="bar"><button class="btn" data-admin="rankings" data-rcat="men">Classement FIP hommes</button><button class="btn" data-admin="rankings" data-rcat="women">Classement FIP femmes</button></div>
     <h3>2 · Tournois Premier Padel</h3>
     <div class="bar"><button class="btn primary" data-admin="list">Voir les prochains tournois</button></div>`;
   if(S.adminList){
@@ -487,9 +506,14 @@ document.addEventListener("click",e=>{
   if(d.act==="rename"){S.renaming=true;render();setTimeout(()=>document.getElementById("pseudo")?.focus(),0);return}
   if(d.act==="install"){installApp();return}
   if(d.act==="logout"){act(async()=>{await sb.auth.signOut();S.session=null;S.me=null;await loadTournaments();await loadTournament()});return}
-  if(d.cat){S.cat=d.cat;S.round=null;act(loadTournament);return}
+  if(d.cat){if(d.cat===S.cat)return;S.cat=d.cat;S.boardAll=false;S.round=null;ls.set("pp-cat",S.cat);history.replaceState(null,"",location.pathname+(S.cat==="women"?"#femmes":"#hommes"));render();act(loadTournament);return}
   if(d.round){S.round=+d.round;render();return}
   if(d.board){S.boardMode=d.board;act(reloadBoard);return}
+  if(d.bcat){
+    if(d.bcat==="all"){S.boardAll=true;act(loadAllBoard);return}
+    S.boardAll=false;
+    if(d.bcat!==S.cat){S.cat=d.bcat;S.round=null;ls.set("pp-cat",S.cat);history.replaceState(null,"",location.pathname+(S.cat==="women"?"#femmes":"#hommes"));act(loadTournament)}else render();
+    return}
   if(d.pick&&!S.session){toast("Connecte-toi (Twitch ou Google, en haut) pour faire tes pronos",true);document.getElementById("me").scrollIntoView({behavior:"smooth",block:"center"});return}
   if(d.pick){const[mid,w]=d.pick.split("|").map(Number);const cur=S.preds[mid];
     act(()=>savePred(mid,{winner:w,sets:cur&&cur.winner===w?cur.sets:null}));return}
@@ -503,11 +527,11 @@ document.addEventListener("click",e=>{
     });return}
   if(d.attack){const sel=document.getElementById(d.attack+"T");if(!sel||!sel.value)return;
     act(async()=>{
-      const{error}=await sb.rpc(d.attack==="neuille"?"use_neuille":"use_black_cat",{p_tournament:S.tid,p_target:sel.value});
+      const{error}=await sb.rpc(d.attack==="neuille"?"use_neuille":"use_black_cat",{p_tournament:S.tid,p_target:sel.value,p_category:S.cat});
       if(error)throw error;await loadTournament();
     },d.attack==="neuille"?"Neuille lancé !":"Le Black Cat est passé…");return}
   // admin
-  if(d.admin==="rankings"){act(async()=>{const{data,error}=await sb.rpc("admin_sync_rankings");if(error)throw error;toast(data+" joueurs mis à jour")});return}
+  if(d.admin==="rankings"){act(async()=>{const{data,error}=await sb.rpc("admin_sync_rankings",{p_category:d.rcat});if(error)throw error;toast(data+(d.rcat==="women"?" joueuses":" joueurs")+" mis à jour")});return}
   if(d.admin==="list"){act(async()=>{const{data,error}=await sb.rpc("admin_list_tournaments");if(error)throw error;S.adminList=data});return}
   if(d.import){act(async()=>{const{data,error}=await sb.rpc("admin_sync",{p_tournament:+d.import});if(error)throw error;
     await loadTournaments();if(!S.tid)S.tid=+d.import;await loadTournament();if(S.adminList)S.adminList.forEach(x=>{if(x.id==d.import)x.imported=true});toast(data+" matchs importés")});return}
