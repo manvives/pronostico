@@ -1,6 +1,6 @@
 // Pronostico : met en cache la page pour un démarrage rapide.
 // Les données (pronos, classement) viennent toujours en direct de Supabase.
-const CACHE = "pronostico-v1";
+const CACHE = "pronostico-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
