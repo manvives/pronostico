@@ -55,9 +55,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
 .brand span{display:flex;flex-direction:column;line-height:1}
 .brand b{font-family:var(--display);font-weight:400;font-size:24px;text-transform:uppercase}
 .brand small{font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--peach)}
-.tabs{display:flex;gap:22px;flex:1 1 auto}
-.tabs button{border:0;background:none;color:#AEB8D3;font-weight:600;font-size:15px;padding:8px 2px;border-bottom:2px solid transparent;display:flex;gap:8px;align-items:center}
-.tabs button[aria-selected="true"]{color:#fff;border-bottom-color:var(--acc)}
+.tabs{display:flex;gap:8px;flex:1 1 auto}
+.tabs button{border:0;background:none;color:#AEB8D3;font-weight:700;font-size:17px;padding:10px 18px;border-radius:999px;display:flex;gap:8px;align-items:center;min-height:44px}
+.tabs button:hover{background:var(--bg2);color:#fff}
+.tabs button[aria-selected="true"]{color:#fff;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line2),inset 0 -3px 0 var(--acc)}
 .tabs svg{display:none}
 .pill-toggle{display:flex;background:var(--bg2);border:1px solid var(--line2);border-radius:999px;padding:4px}
 .pill-toggle button{border:0;border-radius:999px;padding:8px 18px;font-weight:700;background:transparent;color:#AEB8D3;min-height:38px}
@@ -83,7 +84,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
 .hero{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px}
 .hero .info{display:flex;flex-direction:column;gap:8px;min-width:0}
 .hero h1{margin:0;font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:clamp(46px,7vw,96px);line-height:.95;overflow-wrap:anywhere}
-.hero h1 span{color:var(--peach)}
+.hero h1 span{color:#5B80FF}
 .hero .meta{color:#AEB8D3;font-weight:600}
 .live{display:inline-flex;align-items:center;gap:6px;background:var(--red-bg);color:var(--red-soft);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;letter-spacing:.06em}
 .live i{width:8px;height:8px;border-radius:50%;background:var(--red)}
@@ -96,7 +97,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
 .chip[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
 
 /* mise en page pronos */
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;grid-template-areas:"matches prize" "matches bonus" "matches top" "matches .";grid-template-rows:auto auto auto 1fr;gap:16px 28px;align-items:start}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;grid-template-areas:"matches prize" "matches top" "matches bonus" "matches .";grid-template-rows:auto auto auto 1fr;gap:16px 28px;align-items:start}
 .a-matches{grid-area:matches;display:flex;flex-direction:column;gap:14px;min-width:0}
 .a-prize{grid-area:prize}.a-bonus{grid-area:bonus}.a-top{grid-area:top}
 .sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
@@ -247,7 +248,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
 .foot a{color:inherit}
 
 @media (max-width:1000px){
-  .layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"prize" "matches" "bonus" "top";grid-template-rows:none}
+  .layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"prize" "matches" "top" "bonus";grid-template-rows:none}
   .btop{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:760px){
@@ -256,8 +257,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
   .install{padding:7px 9px}.install span{display:none}
   .brand b{font-size:21px}.brand small{display:none}
   .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;gap:0;background:#0B1122;border-top:1px solid #1A2440;padding-bottom:env(safe-area-inset-bottom,0px)}
-  .tabs button{flex:1;flex-direction:column;gap:2px;justify-content:center;min-height:58px;font-size:12px;border-bottom:0;border-top:2px solid transparent}
-  .tabs button[aria-selected="true"]{border-top-color:var(--acc)}
+  .tabs button{flex:1;flex-direction:column;gap:2px;justify-content:center;min-height:58px;font-size:12px;padding:6px 4px;border-radius:0;border-top:2px solid transparent;background:none!important}
+  .tabs button[aria-selected="true"]{border-top-color:var(--acc);box-shadow:none}
   .tabs svg{display:block}
   .top .pill-toggle{order:5;width:100%}
   .top .pill-toggle button{flex:1}
