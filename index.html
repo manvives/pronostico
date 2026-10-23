@@ -55,11 +55,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
 .brand span{display:flex;flex-direction:column;line-height:1}
 .brand b{font-family:var(--display);font-weight:400;font-size:24px;text-transform:uppercase}
 .brand small{font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--peach)}
-.tabs{display:flex;gap:8px;flex:1 1 auto}
-.tabs button{border:0;background:none;color:#AEB8D3;font-weight:700;font-size:17px;padding:10px 18px;border-radius:999px;display:flex;gap:8px;align-items:center;min-height:44px}
-.tabs button:hover{background:var(--bg2);color:#fff}
-.tabs button[aria-selected="true"]{color:#fff;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line2),inset 0 -3px 0 var(--acc)}
-.tabs svg{display:none}
+.tabs{display:flex;gap:10px;flex:1 1 auto;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line2);background:var(--bg2);color:#C9D1E8;font-weight:700;font-size:17px;padding:10px 22px;border-radius:12px;display:flex;gap:8px;align-items:center;min-height:48px}
+.tabs button:hover{border-color:var(--acc);color:#fff}
+.tabs button[aria-selected="true"]{color:var(--acc-ink);background:var(--acc);border-color:var(--acc)}
+.tabs svg{display:block}
 .pill-toggle{display:flex;background:var(--bg2);border:1px solid var(--line2);border-radius:999px;padding:4px}
 .pill-toggle button{border:0;border-radius:999px;padding:8px 18px;font-weight:700;background:transparent;color:#AEB8D3;min-height:38px}
 .pill-toggle button[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink)}
@@ -120,6 +120,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
 .stk>*:first-child{transform:rotate(-6deg)}
 .stk>*+*{margin-left:-12px;transform:rotate(5deg)}
 .side.tbd .stk{display:none}
+.flg{display:flex;flex-direction:column;gap:2px;flex:0 0 auto;margin-right:-4px}
+.flg img,.flg i{width:22px;height:22px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.45);display:block;background:var(--line2)}
+.flg>*:first-child{transform:rotate(-8deg)}
+.flg>*+*{margin-top:-6px;margin-left:6px;transform:rotate(7deg)}
 .side .prob{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .side .gain{font-family:var(--display);font-size:20px;min-width:52px;text-align:right;padding:0 6px;border-radius:6px;font-variant-numeric:tabular-nums}
 .side.sel{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
@@ -239,7 +243,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
 .field{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}
 .field input{border:1px solid var(--line2);border-radius:8px;padding:8px 10px;background:var(--bg2)}
 
-.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#fff;color:#0A0F1F;padding:11px 16px;border-radius:10px;font-weight:700;font-size:14px;max-width:calc(100% - 32px);z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#fff;color:#0A0F1F;padding:11px 16px;border-radius:10px;font-weight:700;font-size:14px;max-width:calc(100% - 32px);z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .toast.err{background:var(--red);color:#fff}
 .ios-tip{background:var(--surface);border:1px solid var(--line2);border-radius:var(--r);padding:14px;font-size:14px;display:flex;gap:10px;align-items:flex-start}
 .ios-tip p{margin:0;flex:1}
@@ -256,9 +260,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
   .top .brand{flex:1 1 auto}
   .install{padding:7px 9px}.install span{display:none}
   .brand b{font-size:21px}.brand small{display:none}
-  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;gap:0;background:#0B1122;border-top:1px solid #1A2440;padding-bottom:env(safe-area-inset-bottom,0px)}
-  .tabs button{flex:1;flex-direction:column;gap:2px;justify-content:center;min-height:58px;font-size:12px;padding:6px 4px;border-radius:0;border-top:2px solid transparent;background:none!important}
-  .tabs button[aria-selected="true"]{border-top-color:var(--acc);box-shadow:none}
+  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;gap:6px;padding:6px 8px;flex-wrap:nowrap;background:#0B1122;border-top:1px solid #1A2440;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+  .tabs button{flex:1;flex-direction:column;gap:2px;justify-content:center;min-height:56px;font-size:12px;padding:6px 4px;border-radius:12px}
+  .tabs .tabs-x{}
   .tabs svg{display:block}
   .top .pill-toggle{order:5;width:100%}
   .top .pill-toggle button{flex:1}
@@ -348,7 +352,12 @@ const mult=k=>k==="triple"?3:k==="double"?2:1;
 
 const tour=()=>S.tournaments.find(t=>t.id===S.tid);
 function isOpen(m){const t=tour();return !!(t&&t.published&&m.status==="scheduled"&&m.team1&&m.team2&&(!m.scheduled_at||new Date(m.scheduled_at)>new Date()))}
-const catMatches=()=>S.matches.filter(m=>m.category===S.cat);
+// les têtes de série exemptées du 1er tour (bye) n'apparaissent pas comme des matchs
+const rawCat=()=>S.matches.filter(m=>m.category===S.cat);
+function isBye(m,top){return m.status==="bye"||(m.round===top&&(!m.team1)!==(!m.team2))}
+const catMatches=()=>{const r=rawCat();const top=Math.max(0,...r.map(m=>m.round));return r.filter(m=>!isBye(m,top))};
+// photos FIP servies via un relais d'images (le site de la FIP bloque l'affichage direct ailleurs)
+function photoSrc(u){if(!u)return "";if(/padelfip\.com/.test(u))return "https://images.weserv.nl/?url="+encodeURIComponent(u.replace(/^https?:\/\//,""))+"&w=120&h=120&fit=cover&a=top&output=webp";return u}
 const firstRound=()=>Math.max(0,...catMatches().map(m=>m.round));
 const fmtD=(d,o)=>new Date(d).toLocaleDateString("fr-FR",{timeZone:"Europe/Paris",...o});
 function when(m){
@@ -399,7 +408,7 @@ async function loadTournament(){
   S.matches=r[0].data||[];S.attacks=r[1].data||[];S.board=r[2].data||[];
   S.votes={};(r[3].data||[]).forEach(v=>S.votes[v.match_id]=v);
   const pids=[...new Set(S.matches.flatMap(m=>[...(m.team1_ids||[]),...(m.team2_ids||[])]))];
-  if(pids.length){const{data:pl}=await sb.from("players").select("id,name,photo_url").in("id",pids);S.photos={};(pl||[]).forEach(x=>S.photos[x.id]=x)}
+  if(pids.length){const{data:pl}=await sb.from("players").select("id,name,photo_url,nationality").in("id",pids);S.photos={};(pl||[]).forEach(x=>S.photos[x.id]=x)}
   S.preds={};(r[4]?.data||[]).forEach(p=>S.preds[p.match_id]=p);
   S.points={};(r[5]?.data||[]).forEach(p=>S.points[p.match_id]=p);
   await loadAllBoard();
@@ -524,10 +533,13 @@ function topHtml(){
     ${rows.length?rows.map((x,i)=>`<div class="trow"><span class="r ${i<3&&x.decided?"g":""}">${i+1}</span>${avatar(x)}<span class="n">${esc(x.display_name)}</span><span class="p">${x.points}</span></div>`).join(""):`<p class="note">Personne n'a encore pronostiqué. Sois la première gargouille !</p>`}</section>`;
 }
 
+function flagSrc(c){c=String(c||"").toLowerCase();return /^[a-z]{2}$/.test(c)?`https://flagcdn.com/w80/${c}.png`:""}
 function stickers(ids,name){
   const parts=String(name||"").split(" / ");
-  return `<span class="stk" aria-hidden="true">${(ids||[]).slice(0,2).map((id,i)=>{const p=S.photos[id];const nm=p?.name||parts[i]||"";
-    return p?.photo_url?`<img src="${esc(p.photo_url)}" alt="" loading="lazy" onerror="this.outerHTML='<i>${esc(initials(nm)).replace(/'/g,"")}</i>'">`:`<i style="background:${hashColor(id)}">${esc(initials(nm))}</i>`}).join("")}</span>`;
+  const fl=(ids||[]).slice(0,2).map(id=>S.photos[id]?.nationality).map(flagSrc);
+  const flags=fl.some(Boolean)?`<span class="flg" aria-hidden="true">${fl.map(f=>f?`<img src="${f}" alt="" loading="lazy" onerror="this.remove()">`:`<i></i>`).join("")}</span>`:"";
+  return flags+`<span class="stk" aria-hidden="true">${(ids||[]).slice(0,2).map((id,i)=>{const p=S.photos[id];const nm=p?.name||parts[i]||"";
+    return p?.photo_url?`<img src="${esc(photoSrc(p.photo_url))}" alt="" loading="lazy" onerror="this.outerHTML='<i>${esc(initials(nm)).replace(/'/g,"")}</i>'">`:`<i style="background:${hashColor(id)}">${esc(initials(nm))}</i>`}).join("")}</span>`;
 }
 function matchHtml(m){
   const pick=S.preds[m.id],open=isOpen(m),bk=pick?.bonus||null,res=m.winner,pt=S.points[m.id],known=m.team1&&m.team2;
@@ -537,6 +549,7 @@ function matchHtml(m){
   else if(voided){st="Annulé";sc="done"}
   else if(m.status==="live"){st=pick?"En cours":"En cours · trop tard";sc="live"}
   else if(open){st=pick?"Prono enregistré":"À pronostiquer";sc=pick?"ok":""}
+  else if(known&&!tour()?.published&&m.status==="scheduled"){st="Caché · aperçu admin";sc=""}
   else if(known){st=pick?"Verrouillé":"Trop tard";sc=pick?"done":"late"}
   else{st="En attente";sc=""}
   let c=`<article class="card match"><div class="mhead"><span class="label">${esc(when(m))}</span><span class="st ${sc}">${st}</span></div>`;
@@ -565,7 +578,7 @@ function matchHtml(m){
     if(pt.good)c+=`<div class="verdict ok">Bien vu : +${pt.pts} pts${pick?.sets&&pick.sets===m.sets?" · score exact":""}${bk&&bk!=="chance"?" · "+B(bk).short:""}${pt.halved?" · neuillé":""}${pt.cancelled?" · annulé par le Black Cat":""}</div>`;
     else if(bk==="chance")c+=`<div class="verdict ok">Prono perdu, mais Ju te sauve : +${pt.pts} pts</div>`;
     else c+=`<div class="verdict ko">Raté sur ce match${bk?" · bonus "+B(bk).short+" perdu":""}</div>`;
-  }else if(S.session&&!pick&&known&&!open&&!voided)c+=`<div class="verdict info">${res?"Pas de prono sur ce match":"Les joueurs sont sur le terrain : trop tard pour pronostiquer"}</div>`;
+  }else if(S.session&&!pick&&known&&!open&&!voided&&(tour()?.published||m.status!=="scheduled"))c+=`<div class="verdict info">${res?"Pas de prono sur ce match":"Les joueurs sont sur le terrain : trop tard pour pronostiquer"}</div>`;
   else if(voided&&pick)c+=`<div class="verdict info">Match non joué : prono sans effet</div>`;
   return c+"</article>";
 }
