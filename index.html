@@ -120,10 +120,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
 .stk>*:first-child{transform:rotate(-6deg)}
 .stk>*+*{margin-left:-12px;transform:rotate(5deg)}
 .side.tbd .stk{display:none}
-.flg{display:flex;flex-direction:column;gap:2px;flex:0 0 auto;margin-right:-4px}
-.flg img,.flg i{width:22px;height:22px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.45);display:block;background:var(--line2)}
+.flg{display:flex;flex-direction:column;flex:0 0 auto;margin-right:-19px;position:relative;z-index:2}
+.flg img,.flg i{width:21px;height:21px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.45);display:block;background:var(--line2)}
 .flg>*:first-child{transform:rotate(-8deg)}
-.flg>*+*{margin-top:-6px;margin-left:6px;transform:rotate(7deg)}
+.flg>*+*{margin-top:-1px;transform:rotate(8deg)}
 .side .prob{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .side .gain{font-family:var(--display);font-size:20px;min-width:52px;text-align:right;padding:0 6px;border-radius:6px;font-variant-numeric:tabular-nums}
 .side.sel{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
@@ -533,7 +533,8 @@ function topHtml(){
     ${rows.length?rows.map((x,i)=>`<div class="trow"><span class="r ${i<3&&x.decided?"g":""}">${i+1}</span>${avatar(x)}<span class="n">${esc(x.display_name)}</span><span class="p">${x.points}</span></div>`).join(""):`<p class="note">Personne n'a encore pronostiqué. Sois la première gargouille !</p>`}</section>`;
 }
 
-function flagSrc(c){c=String(c||"").toLowerCase();return /^[a-z]{2}$/.test(c)?`https://flagcdn.com/w80/${c}.png`:""}
+const ISO3={ESP:"es",ARG:"ar",ITA:"it",FRA:"fr",POR:"pt",PRT:"pt",BRA:"br",BEL:"be",NED:"nl",NLD:"nl",SWE:"se",GBR:"gb",ENG:"gb",USA:"us",CHI:"cl",CHL:"cl",URU:"uy",URY:"uy",PAR:"py",PRY:"py",MEX:"mx",QAT:"qa",KUW:"kw",KWT:"kw",UAE:"ae",ARE:"ae",EGY:"eg",GER:"de",DEU:"de",SUI:"ch",CHE:"ch",AUT:"at",DEN:"dk",DNK:"dk",FIN:"fi",NOR:"no",RUS:"ru",POL:"pl",CZE:"cz",VEN:"ve",PER:"pe",COL:"co",ECU:"ec",AUS:"au",JPN:"jp",KSA:"sa",SAU:"sa",MAR:"ma",TUN:"tn",IRL:"ie",LUX:"lu",AND:"ad",MON:"mc",MCO:"mc",CAN:"ca",RSA:"za",ZAF:"za",IND:"in",LTU:"lt",LAT:"lv",EST:"ee",UKR:"ua",ROU:"ro",BUL:"bg",GRE:"gr",CRO:"hr",SLO:"si",SRB:"rs",TUR:"tr",ISR:"il",BAH:"bh",BHR:"bh",OMA:"om",OMN:"om",KAZ:"kz",HUN:"hu",SVK:"sk",CRC:"cr",PAN:"pa",DOM:"do",PUR:"pr",BOL:"bo"};
+function flagSrc(c){c=String(c||"").trim();if(/^[A-Za-z]{3}$/.test(c))c=ISO3[c.toUpperCase()]||"";c=c.toLowerCase();return /^[a-z]{2}$/.test(c)?`https://flagcdn.com/w80/${c}.png`:""}
 function stickers(ids,name){
   const parts=String(name||"").split(" / ");
   const fl=(ids||[]).slice(0,2).map(id=>S.photos[id]?.nationality).map(flagSrc);
